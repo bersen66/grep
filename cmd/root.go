@@ -1,36 +1,18 @@
 package cmd
 
 import (
-	"errors"
-	"os"
-	"regexp"
-
 	"github.com/bersen66/grep/pkg/filter"
 	"github.com/spf13/cobra"
+	"os"
 )
 
-var fConfig = &filter.Config{}
-
 var rootCmd = &cobra.Command{
-	Use:   "grep [flags] [pattern]",
+	Use:   "grep [pattern] {file} {flags}",
 	Short: "Helps with filtering text",
 	Long:  `Floppa - big russian cat.`,
-	// Validation of positional arguments
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("Pattern expected")
-		}
-		fConfig.Pattern = regexp.MustCompile(args[0])
-
-		if len(args) == 2 {
-			fConfig.FromFile = true
-			fConfig.Path = args[1]
-		}
-
-		return nil
-	},
 	// Run logic
 	Run: func(cmd *cobra.Command, args []string) {
+		fConfig := filter.FromCMD(cmd, args)
 		filter.Run(fConfig)
 	},
 }
@@ -43,13 +25,13 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().IntVarP(&fConfig.After, "after", "A", 0, "specify number of lines after match")
-	rootCmd.PersistentFlags().IntVarP(&fConfig.Before, "before", "B", 0, "specify number of lines before match")
-	rootCmd.PersistentFlags().IntVarP(&fConfig.Context, "context", "C", 0, "specify number before and after match")
+	rootCmd.PersistentFlags().Int64P("after", "A", 0, "specify number of lines after match")
+	rootCmd.PersistentFlags().Int64P("before", "B", 0, "specify number of lines before match")
+	rootCmd.PersistentFlags().Int64P("context", "C", 0, "specify number before and after match")
 
-	rootCmd.PersistentFlags().BoolVarP(&fConfig.Count, "count", "c", false, "count number of strings")
-	rootCmd.PersistentFlags().BoolVarP(&fConfig.IgnoreRegister, "ignore-case", "i", false, "ignore register")
-	rootCmd.PersistentFlags().BoolVarP(&fConfig.Invert, "invert", "v", false, "exclude matches")
-	rootCmd.PersistentFlags().BoolVarP(&fConfig.Fixed, "fixed", "F", false, "an exact match, not a pattern")
-	rootCmd.PersistentFlags().BoolVarP(&fConfig.Number, "line-num", "n", false, "show match line number")
+	rootCmd.PersistentFlags().BoolP("count", "c", false, "count number of strings")
+	rootCmd.PersistentFlags().BoolP("ignore-case", "i", false, "ignore register")
+	rootCmd.PersistentFlags().BoolP("invert", "v", false, "exclude matches")
+	rootCmd.PersistentFlags().BoolP("fixed", "F", false, "an exact match, not a pattern")
+	rootCmd.PersistentFlags().BoolP("line-num", "n", false, "show match line number")
 }
